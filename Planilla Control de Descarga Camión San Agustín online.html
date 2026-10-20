@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planilla Control Descarga Camión</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1450px;
+            width: 100%;
+            background: white;
+            padding: 25px 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            overflow-x: auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #1e3a5f;
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #1e3a5f;
+            text-transform: uppercase;
+        }
+
+        /* Pestañas */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #d0d7de;
+            padding-bottom: 6px;
+        }
+
+        .tab-btn {
+            background: #e9ecf0;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px 30px 0 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            border-bottom: none;
+        }
+
+        .tab-btn:hover {
+            background: #d5dee8;
+        }
+
+        .tab-btn.active {
+            background: #1e3a5f;
+            color: white;
+            border-color: #1e3a5f;
+        }
+
+        .tab-content {
+            display: none;
+            padding-top: 10px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Barra de acciones */
+        .acciones {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .acciones-izq {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .acciones-der {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .chk-auto {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e3a5f;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .chk-auto input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #1e7e34;
+        }
+
+        .estado-guardado {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e7e34;
+            background: #eaf7ee;
+            border: 1px solid #b7e0c4;
+            padding: 4px 12px;
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .estado-guardado.visible {
+            opacity: 1;
+        }
+
+        .btn {
+            padding: 8px 28px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-guardar {
+            background: #1e7e34;
+            color: white;
+        }
+        .btn-guardar:hover {
+            background: #146b2a;
+        }
+
+        .btn-limpiar {
+            background: #b02a37;
+            color: white;
+        }
+        .btn-limpiar:hover {
+            background: #9a232e;
+        }
+
+        .btn-descargar {
+            background: #0d6efd;
+            color: white;
+        }
+        .btn-descargar:hover {
+            background: #0b5ed7;
+        }
+
+        .btn-importar {
+            background: #6f42c1;
+            color: white;
+        }
+        .btn-importar:hover {
+            background: #5a34a0;
+        }
+
+        /* Tablas */
+        .tabla-wrapper {
+            overflow-x: auto;
+            margin-top: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 1200px;
+        }
+
+        th,
+        td {
+            border: 1px solid #333;
+            padding: 6px 8px;
+            text-align: center;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        thead th {
+            background-color: #1e3a5f;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.3px;
+        }
+
+        /* Celdas editables */
+        td[contenteditable="true"] {
+            background-color: #fafbfc;
+            min-width: 60px;
+            cursor: text;
+            transition: background 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        td[contenteditable="true"]:hover {
+            background-color: #e6f0fa;
+        }
+
+        td[contenteditable="true"]:focus {
+            background-color: #ffffff;
+            outline: 2px solid #1e3a5f;
+            outline-offset: -1px;
+            box-shadow: inset 0 0 0 1px #1e3a5f;
+        }
+
+        /* Celdas fijas */
+        td[contenteditable="false"] {
+            background-color: #e9ecef;
+            color: #0a2a44;
+            font-weight: 600;
+            cursor: default;
+        }
+
+        .fusion-diferencia,
+        .varilla-diferencia {
+            background-color: #f0f3f7 !important;
+            color: #003366;
+            font-weight: 700;
+        }
+
+        /* Fila ya guardada automáticamente */
+        tr.fila-guardada td[contenteditable="true"] {
+            background-color: #eaf7ee;
+        }
+
+        /* Historial */
+        .historial-tabla td {
+            background-color: #f8f9fa;
+        }
+
+        .historial-tabla tr:nth-child(even) td {
+            background-color: #edf2f7;
+        }
+
+        .vacio {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .etiqueta-auto {
+            display: inline-block;
+            background: #0d6efd;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 9px;
+            border-radius: 10px;
+            margin-left: 8px;
+            vertical-align: middle;
+            letter-spacing: 0.5px;
+        }
+
+        .etiqueta-import {
+            display: inline-block;
+            background: #6f42c1;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 9px;
+            border-radius: 10px;
+            margin-left: 8px;
+            vertical-align: middle;
+            letter-spacing: 0.5px;
+        }
+
+        .observacion {
+            font-size: 11px;
+            color: #555;
+            margin-top: 15px;
+            text-align: right;
+            border-top: 1px solid #ccc;
+            padding-top: 12px;
+        }
+
+        .acciones-historial {
+            margin-top: 15px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 10px;
+            }
+            .container {
+                box-shadow: none;
+                padding: 10px;
+                border-radius: 0;
+            }
+            .tabs,
+            .acciones,
+            .acciones-historial {
+                display: none !important;
+            }
+            .tab-content {
+                display: block !important;
+            }
+            td[contenteditable="true"] {
+                background-color: white !important;
+            }
+            td[contenteditable="true"]:focus {
+                outline: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Planilla Control de Descarga Camión San Agustín</h1>
+
+        <!-- Pestañas -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="tab-editar">📝 Planilla</button>
+            <button class="tab-btn" data-tab="tab-historial">📋 Historial Guardado</button>
+        </div>
+
+        <!-- Contenido de pestañas -->
+        <div id="tab-editar" class="tab-content active">
+            <div class="acciones">
+                <div class="acciones-izq">
+                    <label class="chk-auto" title="Cada fila que se complete se guarda sola en el historial">
+                        <input type="checkbox" id="chk-autoreg" checked>
+                        Guardado automático en historial
+                    </label>
+                    <span id="estado-guardado" class="estado-guardado"></span>
+                </div>
+                <div class="acciones-der">
+                    <button class="btn btn-guardar" id="btn-guardar">💾 Guardar</button>
+                    <button class="btn btn-limpiar" id="btn-limpiar">🧹 Limpiar</button>
+                </div>
+            </div>
+
+            <div class="tabla-wrapper">
+                <table id="tabla-planilla">
+                    <thead>
+                        <tr>
+                            <th>FECHA</th>
+                            <th>HORARIO</th>
+                            <th>TK</th>
+                            <th>TEMPERATURA TK (°C)</th>
+                            <th>Producto</th>
+                            <th>PATENTE CAMION</th>
+                            <th>NOMBRE CHOFER</th>
+                            <th>LITROS CONVERTIDOS (Según Remito)</th>
+                            <th>LITROS FUSION (Antes)</th>
+                            <th>LITROS VARILLA (Antes)</th>
+                            <th>LITROS DESCARGADOS</th>
+                            <th>LITROS FUSION (Despues)</th>
+                            <th>LITROS VARILLA (Despues)</th>
+                            <th>DIFERENCIA FUSION</th>
+                            <th>DIFERENCIA VARILLA</th>
+                            <th>RECEPCIONA DESCARGA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Fila 1: TK=1 / SUPER -->
+                        <tr data-fila="1">
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="false">1</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="false">SUPER</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true" class="fusion-antes">&nbsp;</td>
+                            <td contenteditable="true" class="varilla-antes">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true" class="fusion-despues">&nbsp;</td>
+                            <td contenteditable="true" class="varilla-despues">&nbsp;</td>
+                            <td contenteditable="false" class="fusion-diferencia">&nbsp;</td>
+                            <td contenteditable="false" class="varilla-diferencia">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                        </tr>
+                        <!-- Fila 2: TK=2 / QUANTIUM NAFTA -->
+                        <tr data-fila="2">
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="false">2</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="false">QUANTIUM NAFTA</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true" class="fusion-antes">&nbsp;</td>
+                            <td contenteditable="true" class="varilla-antes">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true" class="fusion-despues">&nbsp;</td>
+                            <td contenteditable="true" class="varilla-despues">&nbsp;</td>
+                            <td contenteditable="false" class="fusion-diferencia">&nbsp;</td>
+                            <td contenteditable="false" class="varilla-diferencia">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                        </tr>
+                        <!-- Fila 3: TK=3 / QUANTIUM DIESEL X10 -->
+                        <tr data-fila="3">
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="false">3</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="false">QUANTIUM DIESEL X10</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true" class="fusion-antes">&nbsp;</td>
+                            <td contenteditable="true" class="varilla-antes">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true" class="fusion-despues">&nbsp;</td>
+                            <td contenteditable="true" class="varilla-despues">&nbsp;</td>
+                            <td contenteditable="false" class="fusion-diferencia">&nbsp;</td>
+                            <td contenteditable="false" class="varilla-diferencia">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                        </tr>
+                        <!-- Fila 4: TK=4 / DIESEL X10 -->
+                        <tr data-fila="4">
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="false">4</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="false">DIESEL X10</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true" class="fusion-antes">&nbsp;</td>
+                            <td contenteditable="true" class="varilla-antes">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true" class="fusion-despues">&nbsp;</td>
+                            <td contenteditable="true" class="varilla-despues">&nbsp;</td>
+                            <td contenteditable="false" class="fusion-diferencia">&nbsp;</td>
+                            <td contenteditable="false" class="varilla-diferencia">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                        </tr>
+                        <!-- Fila 5: TK=5 / DIESEL X10 -->
+                        <tr data-fila="5">
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="false">5</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="false">DIESEL X10</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true" class="fusion-antes">&nbsp;</td>
+                            <td contenteditable="true" class="varilla-antes">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true" class="fusion-despues">&nbsp;</td>
+                            <td contenteditable="true" class="varilla-despues">&nbsp;</td>
+                            <td contenteditable="false" class="fusion-diferencia">&nbsp;</td>
+                            <td contenteditable="false" class="varilla-diferencia">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                        </tr>
+                        <!-- Fila 6: TK=6 / DIESEL X10 -->
+                        <tr data-fila="6">
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="false">6</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="false">DIESEL X10</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true" class="fusion-antes">&nbsp;</td>
+                            <td contenteditable="true" class="varilla-antes">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                            <td contenteditable="true" class="fusion-despues">&nbsp;</td>
+                            <td contenteditable="true" class="varilla-despues">&nbsp;</td>
+                            <td contenteditable="false" class="fusion-diferencia">&nbsp;</td>
+                            <td contenteditable="false" class="varilla-diferencia">&nbsp;</td>
+                            <td contenteditable="true">&nbsp;</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="observacion">
+                * Las diferencias (FUSION y VARILLA) se calculan automáticamente.<br>
+                * La planilla se guarda sola: los datos quedan en el borrador y cada fila completa pasa al historial.
+            </div>
+        </div>
+
+        <!-- Pestaña Historial -->
+        <div id="tab-historial" class="tab-content">
+            <h2 style="font-size:18px; margin-bottom:12px; color:#1e3a5f;">📋 Registros Guardados</h2>
+            <div id="historial-contenedor">
+                <div class="vacio">No hay registros guardados todavía.</div>
+            </div>
+            <div class="acciones-historial">
+                <button class="btn btn-importar" id="btn-importar-txt">⬆️ Importar TXT</button>
+                <button class="btn btn-descargar" id="btn-descargar-txt">⬇️ Descargar historial en TXT</button>
+                <button class="btn btn-limpiar" id="btn-borrar-historial" style="background:#6c757d;">🗑️ Borrar todo el historial</button>
+            </div>
+            <input type="file" id="input-importar-txt" accept=".txt,text/plain" style="display:none;">
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- CLAVES DE ALMACENAMIENTO ----------
+            const HISTORIAL_KEY = 'historialDescargas';
+            const DRAFT_KEY = 'planillaDescargaBorrador';
+            const AUTOREG_KEY = 'planillaAutoRegistrar';
+
+            // ---------- CLAVE DE SEGURIDAD ----------
+            const CLAVE_SEGURIDAD = 'zazu2026';
+
+            function pedirClave(accion) {
+                const ingreso = prompt(`🔒 Ingrese la clave para ${accion}:`);
+                if (ingreso === null) return false;
+                if (ingreso !== CLAVE_SEGURIDAD) {
+                    alert('❌ Clave incorrecta. Operación cancelada.');
+                    return false;
+                }
+                return true;
+            }
+
+            // Campos que deben estar completos para considerar la fila "terminada"
+            const CAMPOS_REQUERIDOS = ['fecha', 'horario', 'temperatura', 'patente', 'chofer',
+                'litrosConvertidos', 'litrosDescargados', 'recepciona'
+            ];
+
+            // Campos "de datos" (sin contar TK / Producto / diferencias calculadas)
+            const CAMPOS_DATOS = ['fecha', 'horario', 'temperatura', 'patente', 'chofer',
+                'litrosConvertidos', 'fusionAntes', 'varillaAntes', 'litrosDescargados',
+                'fusionDespues', 'varillaDespues', 'recepciona'
+            ];
+
+            // ---------- UTILIDADES ----------
+            function getNumericValue(cell) {
+                if (!cell) return 0;
+                const text = cell.innerText.trim();
+                if (text === '' || text === '\u00A0') return 0;
+                const num = parseFloat(text.replace(',', '.'));
+                return isNaN(num) ? 0 : num;
+            }
+
+            function updateDifferences(row) {
+                // FUSION
+                const fusionAntes = row.querySelector('.fusion-antes');
+                const fusionDespues = row.querySelector('.fusion-despues');
+                const fusionDiff = row.querySelector('.fusion-diferencia');
+                if (fusionAntes && fusionDespues && fusionDiff) {
+                    const antes = getNumericValue(fusionAntes);
+                    const despues = getNumericValue(fusionDespues);
+                    const diff = despues - antes;
+                    fusionDiff.innerText = Number.isInteger(diff) ? diff.toString() : diff.toFixed(2).replace('.', ',');
+                }
+                // VARILLA
+                const varillaAntes = row.querySelector('.varilla-antes');
+                const varillaDespues = row.querySelector('.varilla-despues');
+                const varillaDiff = row.querySelector('.varilla-diferencia');
+                if (varillaAntes && varillaDespues && varillaDiff) {
+                    const antes = getNumericValue(varillaAntes);
+                    const despues = getNumericValue(varillaDespues);
+                    const diff = despues - antes;
+                    varillaDiff.innerText = Number.isInteger(diff) ? diff.toString() : diff.toFixed(2).replace('.', ',');
+                }
+            }
+
+            // Devuelve el objeto de datos de una fila
+            function obtenerDatosFila(row) {
+                const c = row.querySelectorAll('td');
+                const t = i => (c[i] ? c[i].innerText.trim() : '');
+                return {
+                    tk: t(2),
+                    producto: t(4),
+                    fecha: t(0),
+                    horario: t(1),
+                    temperatura: t(3),
+                    patente: t(5),
+                    chofer: t(6),
+                    litrosConvertidos: t(7),
+                    fusionAntes: t(8),
+                    varillaAntes: t(9),
+                    litrosDescargados: t(10),
+                    fusionDespues: t(11),
+                    varillaDespues: t(12),
+                    diferenciaFusion: t(13),
+                    diferenciaVarilla: t(14),
+                    recepciona: t(15)
+                };
+            }
+
+            function filaCompleta(d) {
+                return CAMPOS_REQUERIDOS.every(k => d[k] !== '');
+            }
+
+            function filaVacia(d) {
+                return CAMPOS_DATOS.every(k => d[k] === '');
+            }
+
+            function obtenerDatosPlanilla() {
+                return Array.from(document.querySelectorAll('#tabla-planilla tbody tr'))
+                    .map(row => obtenerDatosFila(row));
+            }
+
+            // ---------- HISTORIAL ----------
+            function cargarHistorial() {
+                const stored = localStorage.getItem(HISTORIAL_KEY);
+                if (!stored) return [];
+                try {
+                    const arr = JSON.parse(stored);
+                    return Array.isArray(arr) ? arr : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function guardarHistorial(registros) {
+                localStorage.setItem(HISTORIAL_KEY, JSON.stringify(registros));
+            }
+
+            // ---------- ESTADO VISUAL ----------
+            let estadoTimer = null;
+            function mostrarEstado(texto) {
+                const el = document.getElementById('estado-guardado');
+                if (!el) return;
+                el.textContent = texto;
+                el.classList.add('visible');
+                clearTimeout(estadoTimer);
+                estadoTimer = setTimeout(() => el.classList.remove('visible'), 4000);
+            }
+
+            // ---------- BORRADOR (autoguardado continuo) ----------
+            function guardarBorrador() {
+                try {
+                    const filas = Array.from(document.querySelectorAll('#tabla-planilla tbody tr'))
+                        .map(row => Array.from(row.querySelectorAll('td'))
+                            .map(td => td.innerText.trim()));
+                    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+                        fecha: new Date().toISOString(),
+                        filas: filas
+                    }));
+                } catch (e) { /* almacenamiento no disponible */ }
+            }
+
+            function restaurarBorrador() {
+                const raw = localStorage.getItem(DRAFT_KEY);
+                if (!raw) return false;
+                try {
+                    const data = JSON.parse(raw);
+                    if (!data || !Array.isArray(data.filas)) return false;
+                    const rows = document.querySelectorAll('#tabla-planilla tbody tr');
+                    let restaurado = false;
+                    data.filas.forEach((valores, i) => {
+                        const row = rows[i];
+                        if (!row) return;
+                        const celdas = row.querySelectorAll('td');
+                        valores.forEach((valor, j) => {
+                            const td = celdas[j];
+                            if (td && td.getAttribute('contenteditable') === 'true') {
+                                td.innerText = (valor === '' ? '\u00A0' : valor);
+                                if (valor !== '') restaurado = true;
+                            }
+                        });
+                        updateDifferences(row);
+                    });
+                    return restaurado;
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            // ---------- GUARDADO AUTOMÁTICO ----------
+            function autoRegistroActivado() {
+                const chk = document.getElementById('chk-autoreg');
+                if (!chk) return true;
+                return chk.checked;
+            }
+
+            function autoGuardar() {
+                // 1) Siempre se guarda el borrador (nada se pierde si cierran la página)
+                guardarBorrador();
+
+                // 2) Si está activado, las filas completas pasan al historial
+                if (!autoRegistroActivado()) {
+                    mostrarEstado('✅ Borrador guardado ' + new Date().toLocaleTimeString());
+                    return;
+                }
+
+                const registros = cargarHistorial();
+                let cambios = false;
+
+                document.querySelectorAll('#tabla-planilla tbody tr').forEach(row => {
+                    const clave = 'fila-' + (row.dataset.fila || '');
+                    const datos = obtenerDatosFila(row);
+                    const idx = registros.findIndex(r => r.origen === clave);
+
+                    if (filaCompleta(datos)) {
+                        if (idx === -1) {
+                            // Nueva fila completa -> nuevo registro
+                            registros.push({
+                                origen: clave,
+                                auto: true,
+                                timestamp: new Date().toLocaleString(),
+                                filas: [datos]
+                            });
+                            cambios = true;
+                        } else if (JSON.stringify(registros[idx].filas[0]) !== JSON.stringify(datos)) {
+                            // La fila ya estaba registrada pero cambió -> se actualiza
+                            registros[idx].filas = [datos];
+                            registros[idx].timestamp = new Date().toLocaleString();
+                            cambios = true;
+                        }
+                        row.classList.add('fila-guardada');
+                    } else {
+                        row.classList.remove('fila-guardada');
+                        // Si la fila se vació por completo, se "cierra" el registro
+                        // para que la próxima carga genere uno nuevo.
+                        if (idx !== -1 && filaVacia(datos)) {
+                            delete registros[idx].origen;
+                            cambios = true;
+                        }
+                    }
+                });
+
+                if (cambios) {
+                    guardarHistorial(registros);
+                    if (document.getElementById('tab-historial').classList.contains('active')) {
+                        renderizarHistorial();
+                    }
+                }
+
+                mostrarEstado('✅ Guardado automático ' + new Date().toLocaleTimeString());
+            }
+
+            // Con retardo para no escribir en cada tecla
+            let timerAuto = null;
+            function programarAutoGuardado(inmediato) {
+                clearTimeout(timerAuto);
+                if (inmediato) {
+                    autoGuardar();
+                } else {
+                    timerAuto = setTimeout(autoGuardar, 500);
+                }
+            }
+
+            // ---------- GUARDADO MANUAL (parte completo) ----------
+            function agregarRegistro() {
+                const datos = obtenerDatosPlanilla();
+                const hayDatos = datos.some(fila => CAMPOS_DATOS.some(k => fila[k] !== ''));
+
+                if (!hayDatos) {
+                    alert('No hay datos para guardar. Complete al menos un campo.');
+                    return;
+                }
+
+                const registros = cargarHistorial();
+                registros.push({
+                    timestamp: new Date().toLocaleString(),
+                    filas: datos
+                });
+                guardarHistorial(registros);
+                guardarBorrador();
+                renderizarHistorial();
+                mostrarPestana('tab-historial');
+            }
+
+            // ---------- RENDER DEL HISTORIAL ----------
+            function renderizarHistorial() {
+                const contenedor = document.getElementById('historial-contenedor');
+                const registros = cargarHistorial();
+                if (registros.length === 0) {
+                    contenedor.innerHTML = '<div class="vacio">No hay registros guardados todavía.</div>';
+                    return;
+                }
+
+                let html = '';
+                registros.forEach((registro, idx) => {
+                    let etiqueta = '';
+                    if (registro.auto) etiqueta = '<span class="etiqueta-auto">AUTO</span>';
+                    if (registro.imported) etiqueta += '<span class="etiqueta-import">IMPORTADO</span>';
+
+                    html += `<div style="margin-bottom: 30px; border-bottom: 2px dashed #ccc; padding-bottom: 15px;">`;
+                    html += `<div style="font-weight:600; font-size:15px; color:#1e3a5f; margin-bottom:8px;">📌 Registro #${idx+1} — ${registro.timestamp} ${etiqueta}</div>`;
+                    html += `<div class="tabla-wrapper"><table class="historial-tabla" style="min-width:1100px;">`;
+                    html += `<thead><tr>
+                                <th>TK</th><th>Producto</th><th>FECHA</th><th>HORARIO</th>
+                                <th>TEMP (°C)</th><th>PATENTE</th><th>CHOFER</th>
+                                <th>LITROS CONV.</th><th>FUSION (A)</th><th>VARILLA (A)</th>
+                                <th>DESCARGADOS</th><th>FUSION (D)</th><th>VARILLA (D)</th>
+                                <th>DIF. FUSION</th><th>DIF. VARILLA</th><th>RECEPCIONA</th>
+                            </tr></thead><tbody>`;
+                    (registro.filas || []).forEach(fila => {
+                        html += `<tr>
+                                    <td>${fila.tk || ''}</td>
+                                    <td>${fila.producto || ''}</td>
+                                    <td>${fila.fecha || ''}</td>
+                                    <td>${fila.horario || ''}</td>
+                                    <td>${fila.temperatura || ''}</td>
+                                    <td>${fila.patente || ''}</td>
+                                    <td>${fila.chofer || ''}</td>
+                                    <td>${fila.litrosConvertidos || ''}</td>
+                                    <td>${fila.fusionAntes || ''}</td>
+                                    <td>${fila.varillaAntes || ''}</td>
+                                    <td>${fila.litrosDescargados || ''}</td>
+                                    <td>${fila.fusionDespues || ''}</td>
+                                    <td>${fila.varillaDespues || ''}</td>
+                                    <td>${fila.diferenciaFusion || ''}</td>
+                                    <td>${fila.diferenciaVarilla || ''}</td>
+                                    <td>${fila.recepciona || ''}</td>
+                                </tr>`;
+                    });
+                    html += `</tbody></table></div>`;
+                    html += `<div style="margin-top:6px; display:flex; gap:12px;">
+                                <button class="btn btn-limpiar" data-borrar-idx="${idx}" style="background:#b02a37; padding:4px 16px; font-size:12px;">🔒 Eliminar este registro</button>
+                             </div>`;
+                    html += `</div>`;
+                });
+
+                contenedor.innerHTML = html;
+
+                document.querySelectorAll('[data-borrar-idx]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const idx = parseInt(this.getAttribute('data-borrar-idx'));
+                        if (!pedirClave('eliminar el registro #' + (idx + 1))) return;
+                        const registros = cargarHistorial();
+                        registros.splice(idx, 1);
+                        guardarHistorial(registros);
+                        renderizarHistorial();
+                        mostrarEstado('🗑️ Registro eliminado');
+                    });
+                });
+            }
+
+            // ---------- DESCARGAR HISTORIAL EN TXT ----------
+            function descargarHistorialTXT() {
+                const registros = cargarHistorial();
+                if (registros.length === 0) {
+                    alert('No hay registros para descargar.');
+                    return;
+                }
+
+                const header = ['TK', 'Producto', 'Fecha', 'Horario', 'Temp(°C)', 'Patente', 'Chofer',
+                    'Litros Conv.', 'Fusion(A)', 'Varilla(A)', 'Descargados', 'Fusion(D)',
+                    'Varilla(D)', 'Dif Fus', 'Dif Var', 'Recepciona'
+                ];
+
+                let contenido = '============================================================\n';
+                contenido += '   REGISTROS DE DESCARGA DE CAMIÓN - SAN AGUSTÍN\n';
+                contenido += '============================================================\n\n';
+
+                registros.forEach((reg, idx) => {
+                    let etiqueta = '';
+                    if (reg.auto) etiqueta = ' [AUTOMÁTICO]';
+                    if (reg.imported) etiqueta += ' [IMPORTADO]';
+                    contenido += `📌 REGISTRO #${idx+1}  (${reg.timestamp})${etiqueta}\n`;
+                    contenido += '------------------------------------------------------------\n';
+                    contenido += header.join(' | ') + '\n';
+                    contenido += header.map(() => '------').join(' | ') + '\n';
+
+                    (reg.filas || []).forEach(fila => {
+                        const row = [
+                            fila.tk || '', fila.producto || '', fila.fecha || '',
+                            fila.horario || '', fila.temperatura || '', fila.patente || '',
+                            fila.chofer || '', fila.litrosConvertidos || '',
+                            fila.fusionAntes || '', fila.varillaAntes || '',
+                            fila.litrosDescargados || '', fila.fusionDespues || '',
+                            fila.varillaDespues || '', fila.diferenciaFusion || '',
+                            fila.diferenciaVarilla || '', fila.recepciona || ''
+                        ];
+                        contenido += row.join(' | ') + '\n';
+                    });
+                    contenido += '\n\n';
+                });
+
+                const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                const fechaStr = new Date().toISOString().slice(0, 10);
+                link.download = `historial_descargas_${fechaStr}.txt`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            }
+
+            // ---------- IMPORTAR TXT ----------
+            function parsearTXT(texto) {
+                const registros = [];
+                const lineas = texto.split(/\r?\n/);
+                let i = 0;
+
+                // Buscar el primer "REGISTRO #"
+                while (i < lineas.length && !/REGISTRO\s*#/i.test(lineas[i])) i++;
+
+                while (i < lineas.length) {
+                    const lineaReg = lineas[i];
+                    const match = lineaReg.match(/REGISTRO\s*#(\d+)\s*\(([^)]+)\)/i);
+                    if (!match) { i++; continue; }
+
+                    const timestamp = match[2].trim();
+                    const auto = /AUTOMÁTICO/i.test(lineaReg);
+                    const imported = /IMPORTADO/i.test(lineaReg);
+
+                    i++;
+                    // Saltar línea separadora de guiones
+                    while (i < lineas.length && /^[-\s]+$/.test(lineas[i]) && lineas[i].trim() !== '') i++;
+
+                    // Línea de encabezados (la saltamos)
+                    if (i < lineas.length && lineas[i].includes('|')) i++;
+                    // Línea separadora de encabezados
+                    if (i < lineas.length && lineas[i].includes('|')) i++;
+
+                    // Leer filas de datos hasta línea vacía o nuevo registro
+                    const filas = [];
+                    while (i < lineas.length) {
+                        const linea = lineas[i];
+                        if (linea.trim() === '') break;
+                        if (/REGISTRO\s*#/i.test(linea)) break;
+                        if (/^[=\-]{5,}/.test(linea.trim())) { i++; continue; }
+
+                        const partes = linea.split('|').map(s => s.trim());
+                        if (partes.length >= 16) {
+                            filas.push({
+                                tk: partes[0] || '',
+                                producto: partes[1] || '',
+                                fecha: partes[2] || '',
+                                horario: partes[3] || '',
+                                temperatura: partes[4] || '',
+                                patente: partes[5] || '',
+                                chofer: partes[6] || '',
+                                litrosConvertidos: partes[7] || '',
+                                fusionAntes: partes[8] || '',
+                                varillaAntes: partes[9] || '',
+                                litrosDescargados: partes[10] || '',
+                                fusionDespues: partes[11] || '',
+                                varillaDespues: partes[12] || '',
+                                diferenciaFusion: partes[13] || '',
+                                diferenciaVarilla: partes[14] || '',
+                                recepciona: partes[15] || ''
+                            });
+                        }
+                        i++;
+                    }
+
+                    if (filas.length) {
+                        registros.push({
+                            timestamp: timestamp,
+                            filas: filas,
+                            imported: true,
+                            auto: auto
+                        });
+                    }
+                }
+                return registros;
+            }
+
+            function importarTXT(file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    try {
+                        const texto = evt.target.result || '';
+                        const nuevos = parsearTXT(texto);
+
+                        if (nuevos.length === 0) {
+                            alert('⚠️ No se encontraron registros válidos en el archivo.\n\n' +
+                                  'Asegúrese de que el archivo tenga el formato de descarga de esta planilla.');
+                            return;
+                        }
+
+                        const registros = cargarHistorial();
+                        const totalAntes = registros.length;
+                        nuevos.forEach(r => registros.push(r));
+                        guardarHistorial(registros);
+                        renderizarHistorial();
+
+                        mostrarEstado(`✅ ${nuevos.length} registro(s) importado(s)`);
+                        alert(`✅ Importación exitosa.\n\nRegistros importados: ${nuevos.length}\nTotal en historial: ${registros.length} (antes: ${totalAntes})`);
+                    } catch (err) {
+                        alert('❌ Error al procesar el archivo: ' + err.message);
+                    }
+                };
+                reader.onerror = function() {
+                    alert('❌ No se pudo leer el archivo.');
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+
+            // ---------- LIMPIAR PLANILLA ----------
+            function limpiarPlanilla() {
+                // Cerrar los registros automáticos vinculados a las filas
+                const registros = cargarHistorial();
+                let cambios = false;
+                registros.forEach(r => {
+                    if (r.origen) {
+                        delete r.origen;
+                        cambios = true;
+                    }
+                });
+                if (cambios) guardarHistorial(registros);
+
+                const filas = document.querySelectorAll('#tabla-planilla tbody tr');
+                filas.forEach(row => {
+                    row.querySelectorAll('td[contenteditable="true"]').forEach(cell => {
+                        cell.innerText = '\u00A0';
+                    });
+                    row.classList.remove('fila-guardada');
+                    updateDifferences(row);
+                });
+
+                localStorage.removeItem(DRAFT_KEY);
+                renderizarHistorial();
+                mostrarEstado('🧹 Planilla limpiada');
+            }
+
+            // ---------- PESTAÑAS ----------
+            function mostrarPestana(id) {
+                document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+                document.querySelector(`.tab-btn[data-tab="${id}"]`).classList.add('active');
+            }
+
+            // ---------- INICIALIZACIÓN ----------
+            function init() {
+                // Pestañas
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const tabId = this.getAttribute('data-tab');
+                        mostrarPestana(tabId);
+                        if (tabId === 'tab-historial') {
+                            renderizarHistorial();
+                        }
+                    });
+                });
+
+                // Preferencia de autoguardado
+                const chk = document.getElementById('chk-autoreg');
+                if (chk) {
+                    chk.checked = (localStorage.getItem(AUTOREG_KEY) !== 'false');
+                    chk.addEventListener('change', function() {
+                        localStorage.setItem(AUTOREG_KEY, this.checked ? 'true' : 'false');
+                        if (this.checked) {
+                            autoGuardar();
+                        } else {
+                            mostrarEstado('ℹ️ Guardado automático en historial desactivado');
+                        }
+                    });
+                }
+
+                // Restaurar lo que estaba escrito antes de cerrar la página
+                const restaurado = restaurarBorrador();
+
+                // Guardar
+                document.getElementById('btn-guardar').addEventListener('click', agregarRegistro);
+
+                // Limpiar planilla
+                document.getElementById('btn-limpiar').addEventListener('click', function() {
+                    if (confirm('¿Limpiar todos los datos de la planilla?')) {
+                        limpiarPlanilla();
+                    }
+                });
+
+                // Borrar historial (con clave)
+                document.getElementById('btn-borrar-historial').addEventListener('click', function() {
+                    if (!pedirClave('BORRAR TODO el historial')) return;
+                    if (confirm('⚠️ ¿Está seguro de eliminar TODO el historial de registros?\n\nEsta acción no se puede deshacer.')) {
+                        guardarHistorial([]);
+                        renderizarHistorial();
+                        mostrarEstado('🗑️ Historial eliminado');
+                    }
+                });
+
+                // Descargar TXT
+                document.getElementById('btn-descargar-txt').addEventListener('click', descargarHistorialTXT);
+
+                // Importar TXT (con clave)
+                const inputImport = document.getElementById('input-importar-txt');
+                document.getElementById('btn-importar-txt').addEventListener('click', function() {
+                    if (!pedirClave('IMPORTAR registros desde TXT')) return;
+                    inputImport.value = '';
+                    inputImport.click();
+                });
+                inputImport.addEventListener('change', function(e) {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    importarTXT(file);
+                });
+
+                // Inicializar diferencias
+                document.querySelectorAll('#tabla-planilla tbody tr').forEach(row => updateDifferences(row));
+
+                // --- AUTOGUARDADO: cualquier edición en la planilla ---
+                const tabla = document.getElementById('tabla-planilla');
+                tabla.addEventListener('input', function(e) {
+                    const td = e.target.closest ? e.target.closest('td[contenteditable="true"]') : null;
+                    if (!td) return;
+                    const row = td.closest('tr');
+                    if (row) updateDifferences(row);
+                    programarAutoGuardado(false);
+                });
+
+                // Al salir de una celda, se guarda al instante
+                tabla.addEventListener('focusout', function(e) {
+                    const td = e.target.closest ? e.target.closest('td[contenteditable="true"]') : null;
+                    if (!td) return;
+                    programarAutoGuardado(true);
+                });
+
+                // Observer para cambios por pegado / borrado
+                const observer = new MutationObserver(function(mutations) {
+                    let tocar = false;
+                    mutations.forEach(function(mutation) {
+                        const target = mutation.target;
+                        let cell = target.closest ? target.closest('td') : null;
+                        if (!cell && target.parentElement) {
+                            cell = target.parentElement.closest ? target.parentElement.closest('td') : null;
+                        }
+                        if (!cell) return;
+                        const row = cell.closest('tr');
+                        if (!row) return;
+                        if (cell.classList.contains('fusion-antes') ||
+                            cell.classList.contains('fusion-despues') ||
+                            cell.classList.contains('varilla-antes') ||
+                            cell.classList.contains('varilla-despues')) {
+                            updateDifferences(row);
+                        }
+                        tocar = true;
+                    });
+                    if (tocar) programarAutoGuardado(false);
+                });
+                document.querySelectorAll('#tabla-planilla td[contenteditable="true"]').forEach(cell => {
+                    observer.observe(cell, { characterData: true, childList: true, subtree: true });
+                });
+
+                // Guardar borrador antes de cerrar / recargar
+                window.addEventListener('beforeunload', guardarBorrador);
+                document.addEventListener('visibilitychange', function() {
+                    if (document.visibilityState === 'hidden') guardarBorrador();
+                });
+
+                renderizarHistorial();
+
+                if (restaurado) {
+                    mostrarEstado('♻️ Datos restaurados automáticamente');
+                }
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
